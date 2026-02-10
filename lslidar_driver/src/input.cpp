@@ -1,7 +1,7 @@
 #include "lslidar_driver/input.h"
 #include <cmath>
 
-extern volatile sig_atomic_t flag;
+volatile sig_atomic_t flag = 1;
 namespace lslidar_driver {
 ////////////////////////////////////////////////////////////////////////
 // Input base class implementation

@@ -46,7 +46,11 @@ namespace lslidar_driver {
                                                                        point_cloud_xyzirt_bak_(new pcl::PointCloud<VPoint>()),
                                                                        scan_msg(new sensor_msgs::msg::LaserScan()),
                                                                        scan_msg_bak(new sensor_msgs::msg::LaserScan()){
-                                                                    
+        // When used as a component, initialize immediately
+        if (!initialize()) {
+            LS_ERROR << "Failed to initialize lslidar driver component." << LS_END;
+            throw std::runtime_error("Failed to initialize lslidar driver");
+        }
         return;
     }
 
@@ -144,8 +148,13 @@ namespace lslidar_driver {
     }
 
     bool LslidarDriver::createRosIO() {
-        pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>(pointcloud_topic, 10);
-        scan_pub = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
+        rclcpp::QoSInitialization qos_init = rclcpp::KeepLast(10);
+        rclcpp::QoS qos_profile_sensor_data = rclcpp::QoS(qos_init, rmw_qos_profile_default);
+        pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>(pointcloud_topic, qos_profile_sensor_data);
+        scan_pub = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", qos_profile_sensor_data);
+
+        // pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>(pointcloud_topic, 10);
+        // scan_pub = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
         rmw_qos_profile_t qos_profile = rmw_qos_profile_default;
         lslidar_control_service_ = this->create_service<lslidar_msgs::srv::LslidarControl>("lslidar_control",
                                                                                            std::bind(
@@ -220,6 +229,12 @@ namespace lslidar_driver {
     }
 
     bool LslidarDriver::initialize() {
+        // Prevent double initialization
+        if (is_initialized_) {
+            LS_INFO << "LslidarDriver already initialized, skipping." << LS_END;
+            return true;
+        }
+        
         this->initTimeStamp();
         if (!loadParameters()) {
             LS_ERROR << "cannot load all required ROS parameters." << LS_END;
@@ -288,6 +303,7 @@ namespace lslidar_driver {
             scan_msg->intensities.assign(point_size, std::numeric_limits<float>::quiet_NaN());
         }
 
+        is_initialized_ = true;
         return true;
     }
 
@@ -1667,3 +1683,6 @@ namespace lslidar_driver {
     }
 
 }  // namespace lslidar_driver
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(lslidar_driver::LslidarDriver)

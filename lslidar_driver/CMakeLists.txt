@@ -22,6 +22,7 @@ find_package(PCL REQUIRED)
 find_package(lslidar_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(std_msgs REQUIRED)
 #find_package(Boost REQUIRED COMPONENTS thread)
 find_package(sensor_msgs REQUIRED)
@@ -36,21 +37,38 @@ include_directories(
 )
 
 
-# c16 Node
-add_executable(lslidar_driver_node src/lslidar_driver_node.cpp src/lslidar_driver.cpp src/input.cpp)
-target_link_libraries(lslidar_driver_node ${rclcpp_LIBRARIES} ${libpcap_LIBRARIES} ${Boost_LIBRARIES})
-ament_target_dependencies(lslidar_driver_node rclcpp std_msgs lslidar_msgs sensor_msgs pcl_conversions)
+# Build as a shared library component
+add_library(lslidar_driver_component SHARED src/lslidar_driver.cpp src/input.cpp)
+target_link_libraries(lslidar_driver_component ${rclcpp_LIBRARIES} ${libpcap_LIBRARIES} ${Boost_LIBRARIES})
+ament_target_dependencies(lslidar_driver_component rclcpp rclcpp_components std_msgs lslidar_msgs sensor_msgs pcl_conversions)
+
+# Register the component
+rclcpp_components_register_node(lslidar_driver_component
+		PLUGIN "lslidar_driver::LslidarDriver"
+		EXECUTABLE lslidar_driver_node)
+
+# Standalone executable (optional, for backward compatibility)
+add_executable(lslidar_driver_node_standalone src/lslidar_driver_node.cpp src/lslidar_driver.cpp src/input.cpp)
+target_link_libraries(lslidar_driver_node_standalone ${rclcpp_LIBRARIES} ${libpcap_LIBRARIES} ${Boost_LIBRARIES})
+ament_target_dependencies(lslidar_driver_node_standalone rclcpp rclcpp_components std_msgs lslidar_msgs sensor_msgs pcl_conversions)
 
 install(DIRECTORY launch params rviz_cfg
 		DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
-		lslidar_driver_node
+		lslidar_driver_component
+		ARCHIVE DESTINATION lib
+		LIBRARY DESTINATION lib
+		RUNTIME DESTINATION bin)
+
+install(TARGETS
+		lslidar_driver_node_standalone
 		DESTINATION lib/${PROJECT_NAME}
 		)
 
-ament_export_dependencies(rclcpp std_msgs lslidar_msgs sensor_msgs pcl_conversions)
+ament_export_dependencies(rclcpp rclcpp_components std_msgs lslidar_msgs sensor_msgs pcl_conversions)
 ament_export_include_directories(include ${PCL_COMMON_INCLUDE_DIRS})
+ament_export_libraries(lslidar_driver_component)
 
 add_definitions("-D${PROJECT_NAME}_VERSION=\"${${PROJECT_NAME}_VERSION}\"")
 ament_package()

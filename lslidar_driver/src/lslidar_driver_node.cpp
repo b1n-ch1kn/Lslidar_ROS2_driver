@@ -2,7 +2,7 @@
 #include "std_msgs/msg/string.h"
 
 using namespace lslidar_driver;
-volatile sig_atomic_t flag = 1;
+extern volatile sig_atomic_t flag;
 
 static void my_handler([[maybe_unused]] int sig) {
     LS_ERROR << "Signal received, ending process." << LS_END;

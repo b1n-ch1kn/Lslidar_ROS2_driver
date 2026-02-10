@@ -332,6 +332,7 @@ namespace lslidar_driver {
         std::atomic<bool> is_get_difop_;
         std::atomic<bool> start_process_msop_;
         std::atomic<int> time_service_mode_ {0};
+        std::atomic<bool> is_initialized_ {false};
         
         bool is_new_c32w_ = true;
         bool is_msc16 = true;
