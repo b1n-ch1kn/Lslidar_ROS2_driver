@@ -1038,7 +1038,7 @@ namespace lslidar_driver {
         socketid = socket(2, 2, 0);
         addrSrv.sin_addr.s_addr = inet_addr(lidar_ip_string.c_str());
         addrSrv.sin_family = AF_INET;
-        addrSrv.sin_port = htons(2368);
+        addrSrv.sin_port = htons(msop_udp_port);
         sendto(socketid, (const char *) config_data, 1206, 0, (struct sockaddr *) &addrSrv, sizeof(addrSrv));
         return true;
     }
