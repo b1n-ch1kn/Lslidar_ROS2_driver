@@ -155,7 +155,7 @@ namespace lslidar_driver {
 
         // pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>(pointcloud_topic, 10);
         // scan_pub = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
-        rmw_qos_profile_t qos_profile = rmw_qos_profile_default;
+        rclcpp::QoS qos_profile(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
         lslidar_control_service_ = this->create_service<lslidar_msgs::srv::LslidarControl>("lslidar_control",
                                                                                            std::bind(
                                                                                                    &LslidarDriver::powerOn,

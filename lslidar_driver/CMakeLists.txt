@@ -34,13 +34,22 @@ include_directories(
 		include
 		${PCL_INCLUDE_DIRS}
 		${Boost_INCLUDE_DIRS}
+		${pcl_conversions_INCLUDE_DIRS}
 )
 
 
 # Build as a shared library component
 add_library(lslidar_driver_component SHARED src/lslidar_driver.cpp src/input.cpp)
-target_link_libraries(lslidar_driver_component ${rclcpp_LIBRARIES} ${libpcap_LIBRARIES} ${Boost_LIBRARIES})
-ament_target_dependencies(lslidar_driver_component rclcpp rclcpp_components std_msgs lslidar_msgs sensor_msgs pcl_conversions)
+target_link_libraries(lslidar_driver_component
+  ${rclcpp_TARGETS}
+  ${rclcpp_components_TARGETS}
+  ${std_msgs_TARGETS}
+  ${lslidar_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  ${pcl_conversions_TARGETS}
+  ${libpcap_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
 
 # Register the component
 rclcpp_components_register_node(lslidar_driver_component
@@ -49,8 +58,16 @@ rclcpp_components_register_node(lslidar_driver_component
 
 # Standalone executable (optional, for backward compatibility)
 add_executable(lslidar_driver_node_standalone src/lslidar_driver_node.cpp src/lslidar_driver.cpp src/input.cpp)
-target_link_libraries(lslidar_driver_node_standalone ${rclcpp_LIBRARIES} ${libpcap_LIBRARIES} ${Boost_LIBRARIES})
-ament_target_dependencies(lslidar_driver_node_standalone rclcpp rclcpp_components std_msgs lslidar_msgs sensor_msgs pcl_conversions)
+target_link_libraries(lslidar_driver_node_standalone
+  ${rclcpp_TARGETS}
+  ${rclcpp_components_TARGETS}
+  ${std_msgs_TARGETS}
+  ${lslidar_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  ${pcl_conversions_TARGETS}
+  ${libpcap_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
 
 install(DIRECTORY launch params rviz_cfg
 		DESTINATION share/${PROJECT_NAME})
